@@ -217,9 +217,9 @@
     } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
     import {
-      getAuth,
-      signInAnonymously
-    } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+  getAuth,
+   signInAnonymously
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
 
     /* =========================
@@ -241,7 +241,13 @@
     const db = getFirestore(app);
 
     const auth = getAuth(app);
-
+signInAnonymously(auth)
+  .then(() => {
+    console.log("Firebase connected!");
+  })
+  .catch((error) => {
+    console.error("Firebase auth error:", error);
+  });
 
     /* =========================
        ELECTION DATA
@@ -258,13 +264,15 @@
         userId: "ABMelections2026user4321",
         candidate: true
         image: https://jwdvhvpcaoczlqoihvdv.supabase.co/storage/v1/object/sign/election-images/2BD5D6C2-55F9-4EB2-9735-E930444B5677.JPG?token=eyJraWQiOiI5YjRiMDk4OS1mYmEyLTQxNDUtOTg5Ni0wNTlmNTg2ZmUwNmEiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJlbGVjdGlvbi1pbWFnZXMvMkJENUQ2QzItNTVGOS00RUIyLTk3MzUtRTkzMDQ0NEI1Njc3LkpQRyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODk3Mzc4MTQsImV4cCI6MTc4OTk5NzAxNH0.huS-iqM9mEYqpxj9cDdNqM-XxA6Y1B4PZr-1kSmUfYfv_9z93hPZGV14WlgwnXXc6KZ0mO5AJ_rU8fvaqarVbQ
-      },
+        email: asha@abmelections2026.com
+    },
 
       "23451": {
         name: "Aaron Joseph",
         userId: "ABMelections2026user5827",
         candidate: true
         image: https://jwdvhvpcaoczlqoihvdv.supabase.co/storage/v1/object/sign/election-images/100BF819-CB32-4987-A242-C6F426AB8F8C.JPG?token=eyJraWQiOiI5YjRiMDk4OS1mYmEyLTQxNDUtOTg5Ni0wNTlmNTg2ZmUwNmEiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJlbGVjdGlvbi1pbWFnZXMvMTAwQkY4MTktQ0IzMi00OTg3LUEyNDItQzZGNDI2QUI4RjhDLkpQRyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODk3Mzc5NjIsImV4cCI6MTc4OTk5NzE2Mn0.Dal00F08TavUbF-OvAs6fTv810bvIUsEfU6pJ1fx6kBCN0CT7fJIaSn1_JaiCA8WF1PRXLmdc_OfMUU_zI1p-g
+        email: aaron@abmelections2026.com
       },
 
       "32142": {
@@ -272,13 +280,15 @@
         userId: "ABMelections2026user7164",
         candidate: false
         image: https://jwdvhvpcaoczlqoihvdv.supabase.co/storage/v1/object/sign/election-images/30E81BFD-341B-44E9-923A-64164A26AB5C.JPG?token=eyJraWQiOiI5YjRiMDk4OS1mYmEyLTQxNDUtOTg5Ni0wNTlmNTg2ZmUwNmEiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJlbGVjdGlvbi1pbWFnZXMvMzBFODFCRkQtMzQxQi00NEU5LTkyM0EtNjQxNjRBMjZBQjVDLkpQRyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODk3MzgwMTIsImV4cCI6MTc4OTk5NzIxMn0.ZbTK27d20XliKmodoLD3ZU26uJbv8Okh1fK1k7VNecMznUEuPL2bMcih6ffEZgtrXsOV_VkjwERfRUqDpktCuw
-      },
+        email: anna@abmelections2026.com
+        },
 
       "78921": {
         name: "Joby Joseph",
         userId: "ABMelections2026user3948",
         candidate: true
         image: https://jwdvhvpcaoczlqoihvdv.supabase.co/storage/v1/object/sign/election-images/6614911E-8274-4B50-85F4-9106EB193E8D.JPG?token=eyJraWQiOiI5YjRiMDk4OS1mYmEyLTQxNDUtOTg5Ni0wNTlmNTg2ZmUwNmEiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJlbGVjdGlvbi1pbWFnZXMvNjYxNDkxMUUtODI3NC00QjUwLTg1RjQtOTEwNkVCMTkzRThELkpQRyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODk3MzgwNzgsImV4cCI6MTc4OTk5NzI3OH0.70CCg5sP3OAxO7UcQzp5EX2Vf10988PkIdnNRZF0DnzQKPS_7O299j475IIc3Zw3f_-JYZ27JdM3q8aZcg77zw
+        email: joby@abmelections2026.com
       },
 
       "96532": {
@@ -287,6 +297,7 @@
         candidate: false,
         admin: true
         image: https://jwdvhvpcaoczlqoihvdv.supabase.co/storage/v1/object/sign/election-images/EE6195CA-10A9-420C-8901-F9CE7264DC1B.JPG?token=eyJraWQiOiI5YjRiMDk4OS1mYmEyLTQxNDUtOTg5Ni0wNTlmNTg2ZmUwNmEiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJlbGVjdGlvbi1pbWFnZXMvRUU2MTk1Q0EtMTBBOS00MjBDLTg5MDEtRjlDRTcyNjREQzFCLkpQRyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODk3MzgxMjgsImV4cCI6MTc4OTk5NzMyOH0.zH83WYi_-RNMiYG99KjffSwEfMXsU8Ru18wA0490uiVVmLKDiZcrQAcT0UDWUS9Xh0kaDo9cyNMigGTF0wgaUw
+        email: anton@abmelections2026.com
       }
     };
 
@@ -319,13 +330,14 @@
        SIGN IN
        ========================= */
 
-    signInAnonymously(auth)
-      .then(() => {
-        console.log("Firebase connected.");
-      })
-      .catch((error) => {
-        console.error("Firebase authentication error:", error);
-      });
+    async function signInUser(email, password) {
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    console.log("Firebase connected.");
+  } catch (error) {
+    console.error("Firebase authentication error:", error);
+  }
+}
 
 
     /* =========================
