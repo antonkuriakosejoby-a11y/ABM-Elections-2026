@@ -1,0 +1,1020 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ABM Elections 2026</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .box {
+      max-width: 750px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+    }
+
+    h1 {
+      color: #1d4ed8;
+    }
+
+    input {
+      padding: 12px;
+      width: 80%;
+      max-width: 350px;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+      font-size: 16px;
+      margin: 8px;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 8px;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+
+    .candidate {
+      border: 1px solid #ddd;
+      border-radius: 15px;
+      padding: 15px;
+      margin: 15px 0;
+      background: #fafafa;
+    }
+
+    .candidate img,
+    .profile-img {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 15px;
+      display: block;
+      margin: 10px auto;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #countdown {
+      font-size: 22px;
+      font-weight: bold;
+      color: #dc2626;
+      margin: 20px;
+    }
+
+    .info {
+      text-align: left;
+      background: #f8fafc;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+    }
+
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+
+    .result {
+      font-size: 20px;
+      margin: 10px;
+      padding: 10px;
+      background: #eef2ff;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN PAGE -->
+  <div id="loginPage" class="box">
+
+    <h1>ABM Elections 2026</h1>
+
+    <h2>Please write code</h2>
+
+    <input
+      type="text"
+      id="codeInput"
+      placeholder="Enter your code"
+      maxlength="5"
+    >
+
+    <br>
+
+    <button onclick="loginWithCode()">Continue</button>
+
+    <p id="loginMessage"></p>
+
+  </div>
+
+
+  <!-- USER PAGE -->
+  <div id="userPage" class="box hidden">
+
+    <h1 id="welcomeText"></h1>
+
+    <p>
+      <b>Election ends:</b>
+      21st September 2026, 10:00
+    </p>
+
+    <div id="countdown"></div>
+
+    <img
+      id="userPhoto"
+      class="profile-img"
+      alt="Profile photo"
+    >
+
+    <div class="info">
+
+      <p>
+        <b>Name:</b>
+        <span id="userName"></span>
+      </p>
+
+      <p>
+        <b>Candidate / Voting Person:</b>
+        <span id="candidateStatus"></span>
+      </p>
+
+      <p>
+        <b>User ID:</b>
+        <span id="userId"></span>
+      </p>
+
+      <p>
+        <b>Status:</b>
+        <span id="voteStatus"></span>
+      </p>
+
+    </div>
+
+    <button onclick="showCandidates()">
+      See Candidates
+    </button>
+
+    <button
+      id="resultsButton"
+      class="hidden"
+      onclick="showResults()"
+    >
+      See Live Results
+    </button>
+
+
+    <!-- CANDIDATES -->
+    <div id="candidatesPage" class="hidden">
+
+      <h2>Choose a Candidate</h2>
+
+      <div id="candidateList"></div>
+
+    </div>
+
+
+    <!-- THANK YOU -->
+    <div id="thankYouPage" class="hidden">
+
+      <h2>🎉 Thank You!</h2>
+
+      <p>Your vote has been saved.</p>
+
+      <p class="success">
+        Your voting status is now Completed.
+      </p>
+
+      <button onclick="goBack()">Go Back</button>
+
+    </div>
+
+
+    <!-- LIVE RESULTS -->
+    <div id="resultsPage" class="hidden">
+
+      <h2>Live Election Results</h2>
+
+      <div id="resultsList"></div>
+
+      <h2 id="leaderText"></h2>
+
+    </div>
+
+
+    <!-- FINAL RESULTS -->
+    <div id="finalPage" class="hidden">
+
+      <h2>🏆 Election Results</h2>
+
+      <div id="finalWinner"></div>
+
+      <h2>🎉 Congratulations!</h2>
+
+    </div>
+
+  </div>
+
+
+  <script type="module">
+
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+    import {
+      getFirestore,
+      collection,
+      query,
+      where,
+      getDocs,
+      addDoc,
+      doc,
+      updateDoc
+    }
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    import {
+      getAuth,
+      signInAnonymously
+    }
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+
+    // =====================================================
+    // FIREBASE CONFIG
+    // =====================================================
+
+    const firebaseConfig = {
+
+      apiKey: "PASTE_YOUR_FIREBASE_API_KEY_HERE",
+
+      authDomain:
+        "abm-elections-2026.firebaseapp.com",
+
+      projectId:
+        "abm-elections-2026",
+
+      storageBucket:
+        "abm-elections-2026.firebasestorage.app",
+
+      messagingSenderId:
+        "PASTE_YOUR_MESSAGING_SENDER_ID_HERE",
+
+      appId:
+        "PASTE_YOUR_FIREBASE_APP_ID_HERE"
+
+    };
+
+
+    const app = initializeApp(firebaseConfig);
+
+    const db = getFirestore(app);
+
+    const auth = getAuth(app);
+
+
+    // =====================================================
+    // PHOTO URLS
+    // =====================================================
+
+    const photos = {
+
+      // ⭐ 1. PASTE ASHA URL HERE
+      "Asha Joby":
+        https://jwdvhvpcaoczlqoihvdv.supabase.co/storage/v1/object/sign/election-images/2BD5D6C2-55F9-4EB2-9735-E930444B5677.JPG?token=eyJraWQiOiI5YjRiMDk4OS1mYmEyLTQxNDUtOTg5Ni0wNTlmNTg2ZmUwNmEiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJlbGVjdGlvbi1pbWFnZXMvMkJENUQ2QzItNTVGOS00RUIyLTk3MzUtRTkzMDQ0NEI1Njc3LkpQRyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODk3Mzc4MTQsImV4cCI6MTc4OTk5NzAxNH0.huS-iqM9mEYqpxj9cDdNqM-XxA6Y1B4PZr-1kSmUfYfv_9z93hPZGV14WlgwnXXc6KZ0mO5AJ_rU8fvaqarVbQ 
+
+      // ⭐ 2. PASTE AARON URL HERE
+      "Aaron Joseph":
+        https://jwdvhvpcaoczlqoihvdv.supabase.co/storage/v1/object/sign/election-images/100BF819-CB32-4987-A242-C6F426AB8F8C.JPG?token=eyJraWQiOiI5YjRiMDk4OS1mYmEyLTQxNDUtOTg5Ni0wNTlmNTg2ZmUwNmEiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJlbGVjdGlvbi1pbWFnZXMvMTAwQkY4MTktQ0IzMi00OTg3LUEyNDItQzZGNDI2QUI4RjhDLkpQRyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODk3Mzc5NjIsImV4cCI6MTc4OTk5NzE2Mn0.Dal00F08TavUbF-OvAs6fTv810bvIUsEfU6pJ1fx6kBCN0CT7fJIaSn1_JaiCA8WF1PRXLmdc_OfMUU_zI1p-g
+      // ⭐ 3. PASTE ANNA URL HERE
+      "Anna Maria":
+        https://jwdvhvpcaoczlqoihvdv.supabase.co/storage/v1/object/sign/election-images/30E81BFD-341B-44E9-923A-64164A26AB5C.JPG?token=eyJraWQiOiI5YjRiMDk4OS1mYmEyLTQxNDUtOTg5Ni0wNTlmNTg2ZmUwNmEiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJlbGVjdGlvbi1pbWFnZXMvMzBFODFCRkQtMzQxQi00NEU5LTkyM0EtNjQxNjRBMjZBQjVDLkpQRyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODk3MzgwMTIsImV4cCI6MTc4OTk5NzIxMn0.ZbTK27d20XliKmodoLD3ZU26uJbv8Okh1fK1k7VNecMznUEuPL2bMcih6ffEZgtrXsOV_VkjwERfRUqDpktCuw
+      // ⭐ 4. PASTE JOBY URL HERE
+      "Joby Joseph":
+        https://jwdvhvpcaoczlqoihvdv.supabase.co/storage/v1/object/sign/election-images/6614911E-8274-4B50-85F4-9106EB193E8D.JPG?token=eyJraWQiOiI5YjRiMDk4OS1mYmEyLTQxNDUtOTg5Ni0wNTlmNTg2ZmUwNmEiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJlbGVjdGlvbi1pbWFnZXMvNjYxNDkxMUUtODI3NC00QjUwLTg1RjQtOTEwNkVCMTkzRThELkpQRyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODk3MzgwNzgsImV4cCI6MTc4OTk5NzI3OH0.70CCg5sP3OAxO7UcQzp5EX2Vf10988PkIdnNRZF0DnzQKPS_7O299j475IIc3Zw3f_-JYZ27JdM3q8aZcg77zw
+      // ⭐ 5. PASTE ANTON URL HERE
+      "Anton Kuriakose":
+        https://jwdvhvpcaoczlqoihvdv.supabase.co/storage/v1/object/sign/election-images/EE6195CA-10A9-420C-8901-F9CE7264DC1B.JPG?token=eyJraWQiOiI5YjRiMDk4OS1mYmEyLTQxNDUtOTg5Ni0wNTlmNTg2ZmUwNmEiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJlbGVjdGlvbi1pbWFnZXMvRUU2MTk1Q0EtMTBBOS00MjBDLTg5MDEtRjlDRTcyNjREQzFCLkpQRyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODk3MzgxMjgsImV4cCI6MTc4OTk5NzMyOH0.zH83WYi_-RNMiYG99KjffSwEfMXsU8Ru18wA0490uiVVmLKDiZcrQAcT0UDWUS9Xh0kaDo9cyNMigGTF0wgaUw
+
+    };
+
+
+    // =====================================================
+    // CANDIDATES
+    // =====================================================
+
+    const candidates = [
+
+      {
+        name: "Asha Joby",
+        image: photos["Asha Joby"]
+      },
+
+      {
+        name: "Aaron Joseph",
+        image: photos["Aaron Joseph"]
+      },
+
+      {
+        name: "Joby Joseph",
+        image: photos["Joby Joseph"]
+      }
+
+    ];
+
+
+    let currentUser = null;
+
+    let currentUserDocId = null;
+
+
+    // =====================================================
+    // ELECTION END
+    // =====================================================
+
+    const electionEnd =
+      new Date(
+        "2026-09-21T10:00:00+05:30"
+      ).getTime();
+
+
+    // =====================================================
+    // LOGIN
+    // =====================================================
+
+    window.loginWithCode = async function() {
+
+      const code =
+        document
+          .getElementById("codeInput")
+          .value
+          .trim();
+
+      const message =
+        document.getElementById("loginMessage");
+
+
+      if (!code) {
+
+        message.textContent =
+          "Please enter your code.";
+
+        message.className = "error";
+
+        return;
+      }
+
+
+      try {
+
+        await signInAnonymously(auth);
+
+
+        const q = query(
+          collection(db, "users"),
+          where("code", "==", code)
+        );
+
+
+        const snapshot =
+          await getDocs(q);
+
+
+        if (snapshot.empty) {
+
+          message.textContent =
+            "Invalid code.";
+
+          message.className = "error";
+
+          return;
+
+        }
+
+
+        const userDoc =
+          snapshot.docs[0];
+
+
+        currentUser =
+          userDoc.data();
+
+        currentUserDocId =
+          userDoc.id;
+
+
+        document
+          .getElementById("loginPage")
+          .classList
+          .add("hidden");
+
+
+        document
+          .getElementById("userPage")
+          .classList
+          .remove("hidden");
+
+
+        document
+          .getElementById("welcomeText")
+          .textContent =
+          "Welcome " +
+          currentUser.name +
+          " to ABM Elections 2026 Voting Page";
+
+
+        document
+          .getElementById("userName")
+          .textContent =
+          currentUser.name;
+
+
+        document
+          .getElementById("candidateStatus")
+          .textContent =
+          currentUser.candidate
+            ? "Candidate"
+            : "Voting Person";
+
+
+        document
+          .getElementById("userId")
+          .textContent =
+          currentUser.userId;
+
+
+        // Show the logged-in person's photo
+        document
+          .getElementById("userPhoto")
+          .src =
+          photos[currentUser.name];
+
+
+        updateStatus();
+
+
+        // Only Anton gets the live-results button
+        if (
+          currentUser.name ===
+          "Anton Kuriakose"
+        ) {
+
+          document
+            .getElementById("resultsButton")
+            .classList
+            .remove("hidden");
+
+        }
+
+
+        checkElectionEnd();
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+          "Something went wrong. Please try again.";
+
+        message.className = "error";
+
+      }
+
+    };
+
+
+    // =====================================================
+    // STATUS
+    // =====================================================
+
+    function updateStatus() {
+
+      const status =
+        document.getElementById("voteStatus");
+
+
+      if (currentUser.voted === true) {
+
+        status.textContent =
+          "Completed";
+
+        status.className =
+          "success";
+
+      } else {
+
+        status.textContent =
+          "Not completed";
+
+      }
+
+    }
+
+
+    // =====================================================
+    // SHOW CANDIDATES
+    // =====================================================
+
+    window.showCandidates = function() {
+
+      document
+        .getElementById("candidatesPage")
+        .classList
+        .remove("hidden");
+
+
+      const list =
+        document.getElementById("candidateList");
+
+
+      list.innerHTML = "";
+
+
+      candidates.forEach(candidate => {
+
+        const div =
+          document.createElement("div");
+
+        div.className =
+          "candidate";
+
+
+        const img =
+          document.createElement("img");
+
+        img.src =
+          candidate.image;
+
+        img.alt =
+          candidate.name;
+
+
+        const name =
+          document.createElement("h3");
+
+        name.textContent =
+          candidate.name;
+
+
+        const button =
+          document.createElement("button");
+
+        button.textContent =
+          "Vote for " +
+          candidate.name;
+
+
+        // Candidate cannot vote for themselves
+        if (
+          currentUser.candidate === true &&
+          currentUser.name === candidate.name
+        ) {
+
+          button.disabled = true;
+
+          button.textContent =
+            "You cannot vote for yourself";
+
+        }
+
+
+        // Already voted
+        if (currentUser.voted === true) {
+
+          button.disabled = true;
+
+          button.textContent =
+            "Already Voted";
+
+        }
+
+
+        button.onclick = function() {
+
+          castVote(candidate.name);
+
+        };
+
+
+        div.appendChild(img);
+
+        div.appendChild(name);
+
+        div.appendChild(button);
+
+        list.appendChild(div);
+
+      });
+
+    };
+
+
+    // =====================================================
+    // CAST VOTE
+    // =====================================================
+
+    window.castVote = async function(candidateName) {
+
+      if (!currentUser) {
+        return;
+      }
+
+
+      if (currentUser.voted === true) {
+
+        alert("You have already voted.");
+
+        return;
+
+      }
+
+
+      if (
+        currentUser.candidate === true &&
+        currentUser.name === candidateName
+      ) {
+
+        alert("You cannot vote for yourself.");
+
+        return;
+
+      }
+
+
+      if (
+        new Date().getTime() >= electionEnd
+      ) {
+
+        alert("The election has ended.");
+
+        return;
+
+      }
+
+
+      try {
+
+        await addDoc(
+          collection(db, "votes"),
+          {
+            candidate: candidateName,
+            voter: currentUser.name,
+            voterId: currentUser.userId,
+            timestamp: new Date().toISOString()
+          }
+        );
+
+
+        await updateDoc(
+          doc(db, "users", currentUserDocId),
+          {
+            voted: true
+          }
+        );
+
+
+        currentUser.voted = true;
+
+        updateStatus();
+
+
+        document
+          .getElementById("candidatesPage")
+          .classList
+          .add("hidden");
+
+
+        document
+          .getElementById("thankYouPage")
+          .classList
+          .remove("hidden");
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert("Could not save your vote.");
+
+      }
+
+    };
+
+
+    // =====================================================
+    // GO BACK
+    // =====================================================
+
+    window.goBack = function() {
+
+      document
+        .getElementById("thankYouPage")
+        .classList
+        .add("hidden");
+
+      showCandidates();
+
+    };
+
+
+    // =====================================================
+    // LIVE RESULTS
+    // =====================================================
+
+    window.showResults = async function() {
+
+      if (
+        !currentUser ||
+        currentUser.name !== "Anton Kuriakose"
+      ) {
+
+        return;
+
+      }
+
+
+      const snapshot =
+        await getDocs(
+          collection(db, "votes")
+        );
+
+
+      const counts = {
+
+        "Asha Joby": 0,
+
+        "Aaron Joseph": 0,
+
+        "Joby Joseph": 0
+
+      };
+
+
+      snapshot.forEach(voteDoc => {
+
+        const vote =
+          voteDoc.data();
+
+
+        if (
+          counts[vote.candidate] !== undefined
+        ) {
+
+          counts[vote.candidate]++;
+
+        }
+
+      });
+
+
+      document
+        .getElementById("resultsPage")
+        .classList
+        .remove("hidden");
+
+
+      const list =
+        document.getElementById("resultsList");
+
+
+      list.innerHTML = "";
+
+
+      Object.keys(counts).forEach(name => {
+
+        const div =
+          document.createElement("div");
+
+        div.className =
+          "result";
+
+        div.textContent =
+          name +
+          ": " +
+          counts[name] +
+          " vote(s)";
+
+        list.appendChild(div);
+
+      });
+
+
+      const max =
+        Math.max(...Object.values(counts));
+
+
+      const leaders =
+        Object.keys(counts)
+          .filter(name => counts[name] === max);
+
+
+      document
+        .getElementById("leaderText")
+        .textContent =
+        "Current leader: " +
+        leaders.join(" and ");
+
+    };
+
+
+    // =====================================================
+    // COUNTDOWN
+    // =====================================================
+
+    function updateCountdown() {
+
+      const now =
+        new Date().getTime();
+
+
+      const distance =
+        electionEnd - now;
+
+
+      const countdown =
+        document.getElementById("countdown");
+
+
+      if (distance <= 0) {
+
+        countdown.textContent =
+          "The election has ended.";
+
+        checkElectionEnd();
+
+        return;
+
+      }
+
+
+      const days =
+        Math.floor(
+          distance /
+          (1000 * 60 * 60 * 24)
+        );
+
+
+      const hours =
+        Math.floor(
+          (distance %
+          (1000 * 60 * 60 * 24)) /
+          (1000 * 60 * 60)
+        );
+
+
+      const minutes =
+        Math.floor(
+          (distance %
+          (1000 * 60 * 60)) /
+          (1000 * 60)
+        );
+
+
+      const seconds =
+        Math.floor(
+          (distance %
+          (1000 * 60)) /
+          1000
+        );
+
+
+      countdown.textContent =
+        days + "d " +
+        hours + "h " +
+        minutes + "m " +
+        seconds + "s remaining";
+
+    }
+
+
+    setInterval(updateCountdown, 1000);
+
+    updateCountdown();
+
+
+    // =====================================================
+    // FINAL RESULTS
+    // =====================================================
+
+    async function checkElectionEnd() {
+
+      if (
+        new Date().getTime() <
+        electionEnd
+      ) {
+
+        return;
+
+      }
+
+
+      const snapshot =
+        await getDocs(
+          collection(db, "votes")
+        );
+
+
+      const counts = {
+
+        "Asha Joby": 0,
+
+        "Aaron Joseph": 0,
+
+        "Joby Joseph": 0
+
+      };
+
+
+      snapshot.forEach(voteDoc => {
+
+        const vote =
+          voteDoc.data();
+
+
+        if (
+          counts[vote.candidate] !== undefined
+        ) {
+
+          counts[vote.candidate]++;
+
+        }
+
+      });
+
+
+      const max =
+        Math.max(...Object.values(counts));
+
+
+      const winners =
+        Object.keys(counts)
+          .filter(name => counts[name] === max);
+
+
+      document
+        .getElementById("finalPage")
+        .classList
+        .remove("hidden");
+
+
+      const winner =
+        document.getElementById("finalWinner");
+
+
+      if (winners.length === 1) {
+
+        winner.innerHTML =
+          "<h2>🏆 Winner: " +
+          winners[0] +
+          "</h2>" +
+          "<p>Congratulations!</p>";
+
+      } else {
+
+        winner.innerHTML =
+          "<h2>🤝 It's a tie!</h2>" +
+          "<p>Congratulations to " +
+          winners.join(" and ") +
+          "!</p>";
+
+      }
+
+    }
+
+  </script>
+
+</body>
+</html>
+```
